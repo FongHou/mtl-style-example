@@ -33,8 +33,8 @@ mainIO = runAppM main
 main :: (MonadArguments m, MonadFileSystem m, MonadLogger m, MonadTime m) => m ()
 main = do
   startTime <- currentTime
-  [fileName] <- getArgs
-  target <- readFile fileName
+  fileName <- getArgs
+  target <- readFile $ head fileName
   logInfoN $ "Hello, " <> target <> "!"
   endTime <- currentTime
   let duration = endTime `diffUTCTime` startTime

@@ -1,13 +1,21 @@
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE TypeSynonymInstances      #-}
+{-# LANGUAGE UndecidableInstances      #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module MTLStyleExample.Test.Stubs where
 
 import qualified Data.Text as T
 
-import Control.Monad.Reader (ReaderT(..), ask)
+import Control.Monad.Logger (MonadLogger (..))
+import Control.Monad.Reader (ReaderT (..), ask)
 import Control.Monad.State (StateT, evalStateT, get, put)
-import Control.Monad.Writer (WriterT(..), tell)
-import Control.Monad.Trans.Class (MonadTrans(..))
-import Control.Monad.Time (MonadTime(..))
-import Control.Monad.Logger (MonadLogger(..))
+import Control.Monad.Time (MonadTime (..))
+import Control.Monad.Trans.Class (MonadTrans (..))
+import Control.Monad.Writer (WriterT (..), tell)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime)
@@ -42,7 +50,7 @@ runFileSystemT :: [(Text, Text)] -> FileSystemT m a -> m a
 runFileSystemT fs (FileSystemT x) = runReaderT x fs
 
 instance Monad m => MonadFileSystem (FileSystemT m) where
-  readFile path = FileSystemT $ ask >>= \files ->
+  readFile path = FileSystemT $ ask >>= \files -> 
     maybe (fail $ "readFile: no such file ‘" ++ T.unpack path ++ "’")
           return (lookup path files)
 
@@ -93,10 +101,12 @@ runTickingClockT' d t (ClockT x) = evalStateT x (ticks t)
 -- order. If the list of times is exhausted, 'currentTime' will throw an
 -- exception the next time it is called.
 runPresetClockT :: Monad m => [UTCTime] -> ClockT m a -> m a
-runPresetClockT ts (ClockT x) = evalStateT x (foldr ClockTick ClockEndOfTime ts)
+runPresetClockT ts (ClockT x) =
+  evalStateT x (foldr ClockTick ClockEndOfTime ts)
 
 instance Monad m => MonadTime (ClockT m) where
   currentTime = ClockT $ get >>= \case
     ClockStopped t -> return t
-    ClockTick t s -> put s >> return t
+    ClockTick t s  -> put s >> return t
     ClockEndOfTime -> fail "currentTime: end of time"
+

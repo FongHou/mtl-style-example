@@ -1,7 +1,10 @@
-resolver: lts-9.10
+resolver: lts-13.27
 
-packages: ['.']
-extra-deps: []
+packages: 
+- .
+extra-deps: 
+- rio-0.1.8.0
+- generic-lens-1.2.0.0
 
 flags: {}
 

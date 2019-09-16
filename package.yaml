@@ -18,21 +18,25 @@ default-extensions:
 - LambdaCase
 - OverloadedStrings
 
+dependencies:
+- base
+- generic-lens
+- microlens-platform
+- monad-logger
+- monad-time
+- mtl
+- text
+- time
+- transformers
+
 library:
-  dependencies:
-  - base
-  - monad-logger
-  - monad-time
-  - mtl
-  - text
-  - time
-  - transformers
   source-dirs: library
 
 executables:
   mtl-style-example:
     dependencies:
     - base
+    - rio
     - mtl-style-example
     ghc-options:
     - -rtsopts
