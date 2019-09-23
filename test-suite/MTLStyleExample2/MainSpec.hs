@@ -16,15 +16,17 @@ import Control.Monad.Writer
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 
-type Test =
-  ReaderT ([Text],FileSystem) (WriterT [ByteString] (State ClockState))
+type Test m =
+  ReaderT ([Text],FileSystem)
+  (WriterT [ByteString]
+  (StateT ClockState m))
 
-newtype TestM a = TestM {runTest :: Test a}
+newtype TestM m a = TestM {runTest :: Test m a}
   deriving (Functor,Applicative,Monad)
-  deriving MonadArguments via (ArgumentsT Test)
-  deriving MonadLogger via (LoggerT Test)
-  deriving MonadFileSystem via (FileSystemT Test)
-  deriving MonadTime via (ClockT Test)
+  deriving MonadArguments via (ArgumentsT (Test m))
+  deriving MonadLogger via (LoggerT (Test m))
+  deriving MonadFileSystem via (FileSystemT (Test m))
+  deriving MonadTime via (ClockT (Test m))
 
 spec :: Spec
 spec =
