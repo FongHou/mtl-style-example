@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2c6e20e223a2d3005946f68cd4cd477aa68476f6115f4439f242ba3e1f648798
+-- hash: c6aab0b7f642201c97ab85d4b8369bb5b3e95f30e368b256d7f8157b81d3fd78
 
 name:           mtl-style-example
 version:        0.0.0
@@ -27,7 +27,7 @@ library
       Paths_mtl_style_example
   hs-source-dirs:
       library
-  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  default-extensions: DataKinds DefaultSignatures FlexibleContexts GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings PolyKinds RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall
   build-depends:
       base
@@ -39,6 +39,7 @@ library
     , monad-logger
     , monad-time
     , mtl
+    , polysemy
     , text
     , time
     , transformers
@@ -50,7 +51,7 @@ executable effect-style-example
       Paths_mtl_style_example
   hs-source-dirs:
       executable
-  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  default-extensions: DataKinds DefaultSignatures FlexibleContexts GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings PolyKinds RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
@@ -63,6 +64,7 @@ executable effect-style-example
     , monad-time
     , mtl
     , mtl-style-example
+    , polysemy
     , text
     , time
     , transformers
@@ -78,10 +80,12 @@ test-suite effect-style-test-suite
       MTLStyleExample.Test.Stubs
       MTLStyleExample2.MainSpec
       MTLStyleExample2.Test.Stubs
+      PolysemyExample.MainSpec
+      PolysemyExample.Test.Stubs
       Paths_mtl_style_example
   hs-source-dirs:
       test-suite
-  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  default-extensions: DataKinds DefaultSignatures FlexibleContexts GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings PolyKinds RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
@@ -95,6 +99,7 @@ test-suite effect-style-test-suite
     , monad-time
     , mtl
     , mtl-style-example
+    , polysemy
     , text
     , time
     , transformers
@@ -110,11 +115,13 @@ benchmark effect-style-benchmark
       MTLStyleExample.Test.Stubs
       MTLStyleExample2.MainSpec
       MTLStyleExample2.Test.Stubs
+      PolysemyExample.MainSpec
+      PolysemyExample.Test.Stubs
       Paths_mtl_style_example
   hs-source-dirs:
       test-suite
-  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  default-extensions: DataKinds DefaultSignatures FlexibleContexts GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings PolyKinds RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
+  ghc-options: -Wall -O2 -flate-specialise -fspecialise-aggressively -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , bytestring
@@ -128,6 +135,7 @@ benchmark effect-style-benchmark
     , monad-time
     , mtl
     , mtl-style-example
+    , polysemy
     , text
     , time
     , transformers

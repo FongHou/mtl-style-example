@@ -34,8 +34,7 @@ spec =
   $ do let epoch = posixSecondsToUTCTime 0
            ((),logMessages) =
              runTest main
-             & flip runReaderT
-                    (["sample.txt"],FileSystem [("sample.txt","World")])
+             & flip runReaderT (["sample.txt"],FileSystem [("sample.txt","World")])
              & runWriterT
              & runTickingClockT epoch
        -- & runStoppedClockT epoch
