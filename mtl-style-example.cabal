@@ -1,0 +1,134 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 2c6e20e223a2d3005946f68cd4cd477aa68476f6115f4439f242ba3e1f648798
+
+name:           mtl-style-example
+version:        0.0.0
+synopsis:       A small example of using mtl style to unit test effectful code.
+description:    A small example of using mtl style to unit test effectful code.
+category:       Other
+maintainer:     Alexis King
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    package.yaml
+    README.md
+    stack.yaml
+
+library
+  exposed-modules:
+      MTLStyleExample.Interfaces
+      MTLStyleExample.Main
+  other-modules:
+      Paths_mtl_style_example
+  hs-source-dirs:
+      library
+  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  ghc-options: -Wall
+  build-depends:
+      base
+    , bytestring
+    , fast-logger
+    , freer-simple
+    , generic-lens
+    , microlens-platform
+    , monad-logger
+    , monad-time
+    , mtl
+    , text
+    , time
+    , transformers
+  default-language: Haskell2010
+
+executable effect-style-example
+  main-is: Main.hs
+  other-modules:
+      Paths_mtl_style_example
+  hs-source-dirs:
+      executable
+  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , bytestring
+    , fast-logger
+    , freer-simple
+    , generic-lens
+    , microlens-platform
+    , monad-logger
+    , monad-time
+    , mtl
+    , mtl-style-example
+    , text
+    , time
+    , transformers
+  default-language: Haskell2010
+
+test-suite effect-style-test-suite
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      FreerExample.MainSpec
+      FreerExample.Test.Stubs
+      MTLStyleExample.MainSpec
+      MTLStyleExample.Test.Stubs
+      MTLStyleExample2.MainSpec
+      MTLStyleExample2.Test.Stubs
+      Paths_mtl_style_example
+  hs-source-dirs:
+      test-suite
+  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , bytestring
+    , fast-logger
+    , freer-simple
+    , generic-lens
+    , hspec
+    , microlens-platform
+    , monad-logger
+    , monad-time
+    , mtl
+    , mtl-style-example
+    , text
+    , time
+    , transformers
+  default-language: Haskell2010
+
+benchmark effect-style-benchmark
+  type: exitcode-stdio-1.0
+  main-is: Bench.hs
+  other-modules:
+      FreerExample.MainSpec
+      FreerExample.Test.Stubs
+      MTLStyleExample.MainSpec
+      MTLStyleExample.Test.Stubs
+      MTLStyleExample2.MainSpec
+      MTLStyleExample2.Test.Stubs
+      Paths_mtl_style_example
+  hs-source-dirs:
+      test-suite
+  default-extensions: DefaultSignatures GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , bytestring
+    , fast-logger
+    , freer-simple
+    , gauge
+    , generic-lens
+    , hspec
+    , microlens-platform
+    , monad-logger
+    , monad-time
+    , mtl
+    , mtl-style-example
+    , text
+    , time
+    , transformers
+  default-language: Haskell2010

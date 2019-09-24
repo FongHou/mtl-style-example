@@ -1,4 +1,3 @@
-{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE TypeApplications #-}
 
 module FreerExample.MainSpec where
