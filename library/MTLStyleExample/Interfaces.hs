@@ -1,3 +1,6 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 module MTLStyleExample.Interfaces
   ( MonadArguments(..)
   , MonadFileSystem(..)
@@ -49,4 +52,3 @@ instance MonadArguments IO where
 
 instance MonadFileSystem IO where
   readFile = T.readFile . T.unpack
-

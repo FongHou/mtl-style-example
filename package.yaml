@@ -20,14 +20,17 @@ default-extensions:
 
 dependencies:
 - base
+- bytestring
 - generic-lens
 - microlens-platform
+- fast-logger
 - monad-logger
 - monad-time
 - mtl
 - text
 - time
 - transformers
+- freer-simple
 
 library:
   source-dirs: library
@@ -36,7 +39,6 @@ executables:
   mtl-style-example:
     dependencies:
     - base
-    - rio
     - mtl-style-example
     ghc-options:
     - -rtsopts
@@ -49,16 +51,8 @@ tests:
   mtl-style-example-test-suite:
     dependencies:
     - base
-    - bytestring
-    - fast-logger
-    - hspec
-    - monad-logger
-    - monad-time
-    - mtl
     - mtl-style-example
-    - text
-    - time
-    - transformers
+    - hspec
     ghc-options:
     - -rtsopts
     - -threaded

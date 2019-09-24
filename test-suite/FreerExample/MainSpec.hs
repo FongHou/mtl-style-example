@@ -1,12 +1,10 @@
 {-# LANGUAGE DerivingVia #-}
 
-module MTLStyleExample2.MainSpec where
+module FreerExample.MainSpec where
 
 import Data.Function ((&))
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Test.Hspec
-import MTLStyleExample.Main
-import MTLStyleExample2.Test.Stubs
 import MTLStyleExample.Interfaces
 import Control.Monad.Logger (MonadLogger(..))
 import Control.Monad.Reader
@@ -16,6 +14,7 @@ import Control.Monad.Writer
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 
+{-
 type Test m =
   ReaderT ([Text],FileSystem)
   (WriterT [ByteString]
@@ -44,3 +43,7 @@ spec =
          $ (logMessages !! 0) `shouldBe` "Hello, World!"
        it "prints the elapsed time in milliseconds as the second message"
          $ (logMessages !! 1) `shouldBe` "1000 milliseconds"
+-}
+
+spec :: Spec
+spec = return ()

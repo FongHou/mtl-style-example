@@ -1,27 +1,32 @@
 {-# LANGUAGE DeriveGeneric             #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE LambdaCase             #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE RankNTypes                #-}
 {-# LANGUAGE TypeApplications          #-}
+{-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE TypeSynonymInstances      #-}
 {-# LANGUAGE UndecidableInstances      #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module MTLStyleExample2.Test.Stubs where
+module FreerExample.Test.Stubs where
 
+import           Control.Monad.Freer
+import           Control.Monad.Freer.Lens
+import           Control.Monad.Freer.Input
+import           Control.Monad.Freer.Output
+import           Control.Monad.Freer.Error
+import           Control.Monad.Freer.State
 import           Control.Monad.Logger (MonadLogger (..))
-import           Control.Monad.Reader
-import           Control.Monad.State
 import           Control.Monad.Time (MonadTime (..))
-import           Control.Monad.Writer
 import           Data.ByteString (ByteString)
-import           Data.Generics.Product
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime)
 import           GHC.Generics
-import           Lens.Micro.Platform
 import           System.Log.FastLogger (fromLogStr, toLogStr)
 
 import MTLStyleExample.Interfaces
@@ -29,38 +34,29 @@ import MTLStyleExample.Interfaces
 --------------------------------------------------------------------------------
 -- Arguments
 
-newtype ArgumentsT m a = ArgumentsT (m a)
-  deriving (Functor, Applicative, Monad)
+-----------------------------------------------------------------------------
+newtype FS = FS [(Text, Text)]
 
-instance (MonadReader r m, HasType [Text] r)
-  => MonadArguments (ArgumentsT m) where
-  getArgs = ArgumentsT $ view (typed @[Text])
+data FileSystem a where
+  ReadFile :: Text -> FileSystem Text
 
---------------------------------------------------------------------------------
--- File System
+instance Member FileSystem effs => MonadFileSystem (Eff effs) where
+  readFile = send . ReadFile
 
-newtype FileSystemT m a = FileSystemT (m a)
-  deriving (Functor, Applicative, Monad)
+data Arguments a where
+  GetArgs :: Arguments [Text]
 
-newtype FileSystem = FileSystem [(Text, Text)]
-
-instance (MonadReader r m, HasType FileSystem r)
-  => MonadFileSystem (FileSystemT m) where
-  readFile path =
-    FileSystemT $ view (typed @FileSystem) >>= \(FileSystem files) -> maybe
-      (error $ "readFile: no such file ‘" ++ T.unpack path ++ "’")
-      return
-      (lookup path files)
+instance Member Arguments effs => MonadArguments (Eff effs) where
+  getArgs = send GetArgs
 
 --------------------------------------------------------------------------------
 -- Logger
 
-newtype LoggerT m a = LoggerT (m a)
-  deriving (Functor, Applicative, Monad)
+data Logger a where
+  Log :: ByteString -> Logger ()
 
-instance (MonadWriter [ByteString] m)
-  => MonadLogger (LoggerT m) where
-  monadLoggerLog _ _ _ str = LoggerT $ tell [fromLogStr (toLogStr str)]
+instance (Member Logger effs) => MonadLogger (Eff effs) where
+  monadLoggerLog _ _ _ str = send $ Log (fromLogStr (toLogStr str))
 
 --------------------------------------------------------------------------------
 -- Clock
@@ -71,11 +67,44 @@ data ClockState
   | ClockEndOfTime
   deriving (Eq, Show, Generic)
 
-newtype ClockT m a = ClockT (m a)
-  deriving (Functor, Applicative, Monad)
+data Clock a where
+  CurrentTime :: Clock UTCTime
 
-instance (MonadState s m, HasType ClockState s)
-    => MonadTime (ClockT m) where
+instance (Member Clock effs) => MonadTime (Eff effs) where
+  currentTime = send CurrentTime
+
+runArguments :: [Text] -> Eff (Arguments ': eff) x -> Eff eff x
+runArguments args = runInputConst args . reinterpret (\case GetArgs -> input)
+
+runLogger :: Eff (Logger ': eff) x -> Eff eff ([ByteString], x)
+runLogger = runOutputList . reinterpret (\case Log msg -> output msg)
+
+runFileSystem :: FS -> Eff (FileSystem ': eff) x -> Eff eff (Either Text x)
+runFileSystem fs =
+  runInputConst fs . runError . reinterpret2
+  (\case
+     ReadFile path -> do
+       FS files <- input @FS
+       maybe (throwError @Text $ "readFile: no such file'" <> path <> "'")
+             return
+             (lookup path files)
+  )
+
+-- runClock
+--   :: UTCTime
+--   -> ClockState
+--   -> Eff (Clock ': eff) x
+--   -> Eff eff ClockState
+-- runClock t s =
+--   evalState s . reinterpret
+--   (\case
+--     CurrentTime -> do
+--       get @ClockState)
+--
+
+{-
+--------------------------------------------------------------------------------
+instance (Member (State ClockState) effs) => MonadTime (Eff effs) where
   currentTime =
     let clock = the @ClockState
     in  ClockT $ use clock >>= \case
@@ -103,3 +132,4 @@ runTickingClockT' d t m = evalState m (ticks t)
 -- -- exception the next time it is called.
 runPresetClockT :: [UTCTime] -> State ClockState a -> a
 runPresetClockT ts m = evalState m (foldr ClockTick ClockEndOfTime ts)
+-}

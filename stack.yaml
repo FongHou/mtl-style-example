@@ -5,7 +5,7 @@ packages:
 extra-deps:
 - generic-lens-1.2.0.0
 - git: https://github.com/FongHou/freer-simple.git
-  commit: e0327d0c4a3de16a5bd1ff379bb5a392b59eacfe
+  commit: bdace81b97255a61401192c5973b028b3349cf2c
 
 flags: {}
 
