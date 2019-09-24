@@ -40,8 +40,10 @@ data Arguments a where
 instance Member Arguments effs => MonadArguments (Eff effs) where
   getArgs = send GetArgs
 
-runArguments :: [Text] -> Eff (Arguments ': eff) x -> Eff eff x
-runArguments args = runInputConst args . reinterpret (\case GetArgs -> input)
+runArguments
+  :: Member (Input [Text]) eff
+  => Eff (Arguments ': eff) x -> Eff eff x
+runArguments = interpret (\case GetArgs -> input)
 
 --------------------------------------------------------------------------------
 -- Logger
@@ -52,8 +54,10 @@ data Logger a where
 instance (Member Logger effs) => MonadLogger (Eff effs) where
   monadLoggerLog _ _ _ str = send $ Log (fromLogStr (toLogStr str))
 
-runLogger :: Eff (Logger ': eff) x -> Eff eff ([ByteString], x)
-runLogger = runOutputList . reinterpret (\case Log msg -> output msg)
+runLogger
+  :: Member (Output ByteString) eff
+  => Eff (Logger ': eff) x -> Eff eff x
+runLogger = interpret (\case Log msg -> output msg)
 
 --------------------------------------------------------------------------------
 -- FileSystem
@@ -66,13 +70,14 @@ instance Member FileSystem effs => MonadFileSystem (Eff effs) where
 
 newtype FS = FS [(Text, Text)]
 
-runFileSystem :: FS -> Eff (FileSystem ': eff) x -> Eff eff (Either Text x)
-runFileSystem fs =
-  runInputConst fs . runError . reinterpret2
+runFileSystem
+  :: Members [Input FS, (Error String) ] eff
+  => Eff (FileSystem ': eff) x -> Eff eff x
+runFileSystem = interpret
   (\case
      ReadFile path -> do
        FS files <- input @FS
-       maybe (throwError $ "readFile: no such file'" <> path <> "'")
+       maybe (throwError $ "readFile: no such file '" <> T.unpack path <> "'")
              return
              (lookup path files)
   )
@@ -92,28 +97,21 @@ data Clock a where
 instance (Member Clock effs) => MonadTime (Eff effs) where
   currentTime = send CurrentTime
 
--- runClock
---   :: UTCTime
---   -> ClockState
---   -> Eff (Clock ': eff) x
---   -> Eff eff ClockState
--- runClock t s =
---   evalState s . reinterpret
---   (\case
---     CurrentTime -> do
---       get @ClockState)
---
+runTickingClock
+  :: Member(Error String) eff
+  => UTCTime -> NominalDiffTime -> Eff (Clock ': eff) x -> Eff eff x
+runTickingClock t d = evalState (ticks t) . reinterpret
+  (\case
+    CurrentTime ->
+      get >>= \case
+        ClockStopped t' -> return t'
+        ClockTick t' s -> put s >> return t'
+        ClockEndOfTime -> throwError @String "currentTime: end of time"
+    )
+  where
+    ticks t' = ClockTick t' (ticks (addUTCTime d t'))
 
 {-
---------------------------------------------------------------------------------
-instance (Member (State ClockState) effs) => MonadTime (Eff effs) where
-  currentTime =
-    let clock = the @ClockState
-    in  ClockT $ use clock >>= \case
-          ClockStopped t -> return t
-          ClockTick t s  -> clock .= s >> return t
-          ClockEndOfTime -> error "currentTime: end of time"
-
 -- -- | Runs a computation with a constant time that never changes.
 runStoppedClockT :: UTCTime -> State ClockState a -> a
 runStoppedClockT t m = evalState m (ClockStopped t)

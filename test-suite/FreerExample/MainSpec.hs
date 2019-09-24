@@ -1,49 +1,36 @@
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE TypeApplications #-}
 
 module FreerExample.MainSpec where
 
+import Control.Monad.Freer
+import Control.Monad.Freer.Error
+import Control.Monad.Freer.Input
+import Control.Monad.Freer.Output
+import Data.ByteString (ByteString)
 import Data.Function ((&))
+import Data.Text (Text)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Test.Hspec
-import MTLStyleExample.Interfaces
-import Control.Monad.Logger (MonadLogger(..))
-import Control.Monad.Reader
-import Control.Monad.State
-import Control.Monad.Time (MonadTime(..))
-import Control.Monad.Writer
-import Data.ByteString (ByteString)
-import Data.Text (Text)
-
-{-
-type Test m =
-  ReaderT ([Text],FileSystem)
-  (WriterT [ByteString]
-  (StateT ClockState m))
-
-newtype TestT m a = TestM {runTest :: Test m a}
-  deriving (Functor,Applicative,Monad)
-  deriving MonadArguments via (ArgumentsT (Test m))
-  deriving MonadLogger via (LoggerT (Test m))
-  deriving MonadFileSystem via (FileSystemT (Test m))
-  deriving MonadTime via (ClockT (Test m))
+import FreerExample.Test.Stubs
+import MTLStyleExample.Main
 
 spec :: Spec
 spec =
   describe "main"
-  $ do let epoch = posixSecondsToUTCTime 0
-           ((),logMessages) =
-             runTest main
-             & flip runReaderT
-                    (["sample.txt"],FileSystem [("sample.txt","World")])
-             & runWriterT
-             & runTickingClockT epoch
-       -- & runStoppedClockT epoch
-       it "prints two log messages" $ length logMessages `shouldBe` 2
+  $ do let Right (logs,()) =
+             MTLStyleExample.Main.main
+             & runArguments
+             & runLogger
+             & runTickingClock (posixSecondsToUTCTime 0) 1
+             & runFileSystem
+             & runOutputList @ByteString
+             & runError @String
+             & runInputConst (FS [("sample.txt","World")])
+             & runInputConst ["sample.txt" :: Text]
+             & run
+       it "prints two log messages" $ length logs `shouldBe` 2
        it "prints a greeting as the first message"
-         $ (logMessages !! 0) `shouldBe` "Hello, World!"
+         $ (logs !! 0) `shouldBe` "Hello, World!"
        it "prints the elapsed time in milliseconds as the second message"
-         $ (logMessages !! 1) `shouldBe` "1000 milliseconds"
--}
-
-spec :: Spec
-spec = return ()
+         $ (logs !! 1) `shouldBe` "1000 milliseconds"
