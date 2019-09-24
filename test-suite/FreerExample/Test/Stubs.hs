@@ -34,20 +34,14 @@ import MTLStyleExample.Interfaces
 --------------------------------------------------------------------------------
 -- Arguments
 
------------------------------------------------------------------------------
-newtype FS = FS [(Text, Text)]
-
-data FileSystem a where
-  ReadFile :: Text -> FileSystem Text
-
-instance Member FileSystem effs => MonadFileSystem (Eff effs) where
-  readFile = send . ReadFile
-
 data Arguments a where
   GetArgs :: Arguments [Text]
 
 instance Member Arguments effs => MonadArguments (Eff effs) where
   getArgs = send GetArgs
+
+runArguments :: [Text] -> Eff (Arguments ': eff) x -> Eff eff x
+runArguments args = runInputConst args . reinterpret (\case GetArgs -> input)
 
 --------------------------------------------------------------------------------
 -- Logger
@@ -57,6 +51,31 @@ data Logger a where
 
 instance (Member Logger effs) => MonadLogger (Eff effs) where
   monadLoggerLog _ _ _ str = send $ Log (fromLogStr (toLogStr str))
+
+runLogger :: Eff (Logger ': eff) x -> Eff eff ([ByteString], x)
+runLogger = runOutputList . reinterpret (\case Log msg -> output msg)
+
+--------------------------------------------------------------------------------
+-- FileSystem
+
+data FileSystem a where
+  ReadFile :: Text -> FileSystem Text
+
+instance Member FileSystem effs => MonadFileSystem (Eff effs) where
+  readFile = send . ReadFile
+
+newtype FS = FS [(Text, Text)]
+
+runFileSystem :: FS -> Eff (FileSystem ': eff) x -> Eff eff (Either Text x)
+runFileSystem fs =
+  runInputConst fs . runError . reinterpret2
+  (\case
+     ReadFile path -> do
+       FS files <- input @FS
+       maybe (throwError $ "readFile: no such file'" <> path <> "'")
+             return
+             (lookup path files)
+  )
 
 --------------------------------------------------------------------------------
 -- Clock
@@ -72,23 +91,6 @@ data Clock a where
 
 instance (Member Clock effs) => MonadTime (Eff effs) where
   currentTime = send CurrentTime
-
-runArguments :: [Text] -> Eff (Arguments ': eff) x -> Eff eff x
-runArguments args = runInputConst args . reinterpret (\case GetArgs -> input)
-
-runLogger :: Eff (Logger ': eff) x -> Eff eff ([ByteString], x)
-runLogger = runOutputList . reinterpret (\case Log msg -> output msg)
-
-runFileSystem :: FS -> Eff (FileSystem ': eff) x -> Eff eff (Either Text x)
-runFileSystem fs =
-  runInputConst fs . runError . reinterpret2
-  (\case
-     ReadFile path -> do
-       FS files <- input @FS
-       maybe (throwError @Text $ "readFile: no such file'" <> path <> "'")
-             return
-             (lookup path files)
-  )
 
 -- runClock
 --   :: UTCTime
