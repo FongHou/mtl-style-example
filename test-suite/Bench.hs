@@ -12,7 +12,7 @@ import Gauge (bench, bgroup, nf)
 import Gauge.Main (defaultMain)
 
 import qualified MTLStyleExample.Main
-import           MTLStyleExample.Test.Stubs
+import MTLStyleExample.Test.Stubs
 
 import qualified Control.Monad.Freer as Freer
 import qualified Control.Monad.Freer.Error as Freer

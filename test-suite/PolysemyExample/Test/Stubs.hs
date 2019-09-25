@@ -114,18 +114,18 @@ runClock = reinterpret
     )
 
 runTickingClock
-  :: Member(Error String) eff
+  :: Member (Error String) eff
   => UTCTime -> NominalDiffTime -> Sem (Clock ': eff) x -> Sem eff x
 runTickingClock t d = evalState (ticks t) . runClock
   where
     ticks t' = ClockTick t' (ticks (addUTCTime d t'))
 
 runStoppedClock
-  :: Member(Error String) eff
+  :: Member (Error String) eff
   => UTCTime -> Sem (Clock ': eff) x -> Sem eff x
 runStoppedClock t = evalState (ClockStopped t) . runClock
 
 runPresetClock
-  :: Member(Error String) eff
+  :: Member (Error String) eff
   => [UTCTime] -> Sem (Clock ': eff) x -> Sem eff x
 runPresetClock ts = evalState (foldr ClockTick ClockEndOfTime ts) . runClock

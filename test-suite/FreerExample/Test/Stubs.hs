@@ -1,27 +1,27 @@
-{-# LANGUAGE DataKinds                 #-}
-{-# LANGUAGE DeriveGeneric             #-}
-{-# LANGUAGE FlexibleContexts          #-}
-{-# LANGUAGE FlexibleInstances         #-}
-{-# LANGUAGE LambdaCase                #-}
-{-# LANGUAGE TypeApplications          #-}
-{-# LANGUAGE TypeOperators             #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE TypeOperators     #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module FreerExample.Test.Stubs where
 
-import           Control.Monad.Freer
-import           Control.Monad.Freer.Error
-import           Control.Monad.Freer.Input
-import           Control.Monad.Freer.Output
-import           Control.Monad.Freer.State
-import           Control.Monad.Logger (MonadLogger (..))
-import           Control.Monad.Time (MonadTime (..))
-import           Data.ByteString (ByteString)
-import           Data.Text (Text)
+import Control.Monad.Freer
+import Control.Monad.Freer.Error
+import Control.Monad.Freer.Input
+import Control.Monad.Freer.Output
+import Control.Monad.Freer.State
+import Control.Monad.Logger (MonadLogger (..))
+import Control.Monad.Time (MonadTime (..))
+import Data.ByteString (ByteString)
+import Data.Text (Text)
 import qualified Data.Text as T
-import           Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime)
-import           GHC.Generics
-import           System.Log.FastLogger (fromLogStr, toLogStr)
+import Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime)
+import GHC.Generics
+import System.Log.FastLogger (fromLogStr, toLogStr)
 
 import MTLStyleExample.Interfaces
 

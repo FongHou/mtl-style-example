@@ -1,3 +1,4 @@
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts          #-}
@@ -6,7 +7,6 @@
 {-# LANGUAGE TypeApplications          #-}
 {-# LANGUAGE TypeSynonymInstances      #-}
 {-# LANGUAGE UndecidableInstances      #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module MTLStyleExample2.Test.Stubs where
 
@@ -25,6 +25,18 @@ import           Lens.Micro.Platform
 import           System.Log.FastLogger (fromLogStr, toLogStr)
 
 import MTLStyleExample.Interfaces
+
+type Test m =
+  ReaderT ([Text],FileSystem)
+  (WriterT [ByteString]
+  (StateT ClockState m))
+
+newtype TestT m a = TestM {runTest :: Test m a}
+  deriving (Functor,Applicative,Monad)
+  deriving MonadArguments via (ArgumentsT (Test m))
+  deriving MonadLogger via (LoggerT (Test m))
+  deriving MonadFileSystem via (FileSystemT (Test m))
+  deriving MonadTime via (ClockT (Test m))
 
 --------------------------------------------------------------------------------
 -- Arguments
@@ -52,6 +64,9 @@ instance (MonadReader r m, HasType FileSystem r)
       return
       (lookup path files)
 
+runArgumentsFileSystem :: [Text] -> FileSystem -> ReaderT ([Text],FileSystem) m a -> m a
+runArgumentsFileSystem args fs = flip runReaderT (args, fs)
+
 --------------------------------------------------------------------------------
 -- Logger
 
@@ -61,6 +76,9 @@ newtype LoggerT m a = LoggerT (m a)
 instance (MonadWriter [ByteString] m)
   => MonadLogger (LoggerT m) where
   monadLoggerLog _ _ _ str = LoggerT $ tell [fromLogStr (toLogStr str)]
+
+runLoggerT :: WriterT [ByteString] m a -> m (a, [ByteString])
+runLoggerT = runWriterT
 
 --------------------------------------------------------------------------------
 -- Clock

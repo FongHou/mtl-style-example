@@ -7,26 +7,6 @@ import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Test.Hspec
 import MTLStyleExample.Main
 import MTLStyleExample2.Test.Stubs
-import MTLStyleExample.Interfaces
-import Control.Monad.Logger (MonadLogger(..))
-import Control.Monad.Reader
-import Control.Monad.State
-import Control.Monad.Time (MonadTime(..))
-import Control.Monad.Writer
-import Data.ByteString (ByteString)
-import Data.Text (Text)
-
-type Test m =
-  ReaderT ([Text],FileSystem)
-  (WriterT [ByteString]
-  (StateT ClockState m))
-
-newtype TestT m a = TestM {runTest :: Test m a}
-  deriving (Functor,Applicative,Monad)
-  deriving MonadArguments via (ArgumentsT (Test m))
-  deriving MonadLogger via (LoggerT (Test m))
-  deriving MonadFileSystem via (FileSystemT (Test m))
-  deriving MonadTime via (ClockT (Test m))
 
 spec :: Spec
 spec =
@@ -34,8 +14,8 @@ spec =
   $ do let epoch = posixSecondsToUTCTime 0
            ((),logMessages) =
              runTest main
-             & flip runReaderT (["sample.txt"],FileSystem [("sample.txt","World")])
-             & runWriterT
+             & runArgumentsFileSystem ["sample.txt"] (FileSystem [("sample.txt","World")])
+             & runLoggerT
              & runTickingClockT epoch
        -- & runStoppedClockT epoch
        it "prints two log messages" $ length logMessages `shouldBe` 2

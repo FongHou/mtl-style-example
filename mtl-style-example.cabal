@@ -15,7 +15,6 @@ maintainer:     Alexis King
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    package.yaml
     README.md
     stack.yaml
 
@@ -43,6 +42,8 @@ library
     , text
     , time
     , transformers
+    , gauge
+    , hspec
   default-language: Haskell2010
 
 executable effect-style-example
@@ -92,6 +93,7 @@ test-suite effect-style-test-suite
     , bytestring
     , fast-logger
     , freer-simple
+    , gauge
     , generic-lens
     , hspec
     , microlens-platform
