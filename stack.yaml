@@ -12,7 +12,7 @@ extra-deps:
 - unagi-chan-0.4.1.2@sha256:267bb3c4cf55b37bd9a6f4354f4e0876d592903b29d84b0b7b7c6a7e0c8af826,8963
 
 - git: https://github.com/FongHou/freer-simple.git
-  commit: bdace81b97255a61401192c5973b028b3349cf2c
+  commit: 14c515ab1a67208eb77f65402ab10e103659720f
 
 flags: {}
 
