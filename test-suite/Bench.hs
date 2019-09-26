@@ -12,7 +12,8 @@ import Gauge (bench, bgroup, nf)
 import Gauge.Main (defaultMain)
 
 import qualified MTLStyleExample.Main
-import MTLStyleExample.Test.Stubs
+import MTLStyleExample.Test.Stubs as MTL
+import MTLStyleExample2.Test.Stubs as CPS
 
 import qualified Control.Monad.Freer as Freer
 import qualified Control.Monad.Freer.Error as Freer
@@ -29,11 +30,17 @@ import qualified PolysemyExample.Test.Stubs as Poly
 mtl :: ((),[ByteString])
 mtl =
   MTLStyleExample.Main.main
-  & runArgumentsT ["sample.txt"]
-  & runFileSystemT [("sample.txt","Alyssa")]
-  & runLoggerT
-  & runTickingClockT (posixSecondsToUTCTime 0)
+  & MTL.runArgumentsT ["sample.txt"]
+  & MTL.runFileSystemT [("sample.txt","Alyssa")]
+  & MTL.runLoggerT
+  & MTL.runTickingClockT (posixSecondsToUTCTime 0)
   & runIdentity
+
+cps :: ((), [ByteString])
+cps = CPS.runTest MTLStyleExample.Main.main
+       & CPS.runArgumentsFileSystem ["sample.txt"] (FileSystem [("sample.txt","World")])
+       & CPS.runLoggerT
+       & CPS.runTickingClockT (posixSecondsToUTCTime 0)
 
 freer :: Either String ([ByteString],())
 freer =
@@ -73,9 +80,12 @@ main :: IO ()
 main =
   defaultMain [bgroup "effect-style-bench"
                       [bench "mtl" $ nf (runs mtl) 1
+                      ,bench "cps" $ nf (runs cps) 1
                       ,bench "freer" $ nf (runs freer) 1
                       ,bench "polysemy" $ nf (runs polysemy) 1
                       ,bench "mtlN" $ nf (runs mtl) n
+                      ,bench "cpsN" $ nf (runs cps) 1
                       ,bench "freerN" $ nf (runs freer) n
                       ,bench "polysemyN" $ nf (runs polysemy) n
                       ]]
+

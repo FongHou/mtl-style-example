@@ -105,6 +105,7 @@ test-suite effect-style-test-suite
     , text
     , time
     , transformers
+    , writer-cps-mtl
   default-language: Haskell2010
 
 benchmark effect-style-benchmark
@@ -141,4 +142,5 @@ benchmark effect-style-benchmark
     , text
     , time
     , transformers
+    , writer-cps-mtl
   default-language: Haskell2010

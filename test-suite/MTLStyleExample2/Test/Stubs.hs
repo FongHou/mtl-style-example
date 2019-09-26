@@ -14,7 +14,7 @@ import           Control.Monad.Logger (MonadLogger (..))
 import           Control.Monad.Reader
 import           Control.Monad.State
 import           Control.Monad.Time (MonadTime (..))
-import           Control.Monad.Writer
+import           Control.Monad.Writer.CPS
 import           Data.ByteString (ByteString)
 import           Data.Generics.Product
 import           Data.Text (Text)
