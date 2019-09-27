@@ -1,38 +1,39 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE RankNTypes                #-}
-{-# LANGUAGE TypeApplications          #-}
-{-# LANGUAGE TypeSynonymInstances      #-}
-{-# LANGUAGE UndecidableInstances      #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module MTLStyleExample2.Test.Stubs where
 
-import           Control.Monad.Logger (MonadLogger (..))
-import           Control.Monad.Reader
-import           Control.Monad.State
-import           Control.Monad.Time (MonadTime (..))
-import           Control.Monad.Writer.CPS
-import           Data.ByteString (ByteString)
-import           Data.Generics.Product
-import           Data.Text (Text)
+import Control.Monad.Logger ( MonadLogger(..) )
+import Control.Monad.Reader
+import Control.Monad.State
+import Control.Monad.Time ( MonadTime(..) )
+import Control.Monad.Writer.CPS
+
+import Data.ByteString ( ByteString )
+import Data.Generics.Product
+import Data.Text ( Text )
 import qualified Data.Text as T
-import           Data.Time.Clock (NominalDiffTime, UTCTime, addUTCTime)
-import           GHC.Generics
-import           Lens.Micro.Platform
-import           System.Log.FastLogger (fromLogStr, toLogStr)
+import Data.Time.Clock ( NominalDiffTime, UTCTime, addUTCTime )
+
+import GHC.Generics
+
+import Lens.Micro.Platform
 
 import MTLStyleExample.Interfaces
 
-type Test m =
-  ReaderT ([Text],FileSystem)
-  (WriterT [ByteString]
-  (StateT ClockState m))
+import System.Log.FastLogger ( fromLogStr, toLogStr )
 
-newtype TestT m a = TestM {runTest :: Test m a}
-  deriving (Functor,Applicative,Monad)
+type Test m = ReaderT ([Text], FS) (WriterT [ByteString] (StateT ClockState m))
+
+newtype TestT m a = TestM { runTest :: Test m a }
+  deriving ( Functor, Applicative, Monad )
   deriving MonadArguments via (ArgumentsT (Test m))
   deriving MonadLogger via (LoggerT (Test m))
   deriving MonadFileSystem via (FileSystemT (Test m))
@@ -40,41 +41,37 @@ newtype TestT m a = TestM {runTest :: Test m a}
 
 --------------------------------------------------------------------------------
 -- Arguments
-
 newtype ArgumentsT m a = ArgumentsT (m a)
-  deriving (Functor, Applicative, Monad)
+  deriving ( Functor, Applicative, Monad )
 
 instance (MonadReader r m, HasType [Text] r)
-  => MonadArguments (ArgumentsT m) where
+   => MonadArguments (ArgumentsT m) where
   getArgs = ArgumentsT $ view (typed @[Text])
 
 --------------------------------------------------------------------------------
 -- File System
-
 newtype FileSystemT m a = FileSystemT (m a)
-  deriving (Functor, Applicative, Monad)
+  deriving ( Functor, Applicative, Monad )
 
-newtype FileSystem = FileSystem [(Text, Text)]
+newtype FS = FileSystem [(Text, Text)]
 
-instance (MonadReader r m, HasType FileSystem r)
-  => MonadFileSystem (FileSystemT m) where
-  readFile path =
-    FileSystemT $ view (typed @FileSystem) >>= \(FileSystem files) -> maybe
-      (error $ "readFile: no such file ‘" ++ T.unpack path ++ "’")
-      return
-      (lookup path files)
+instance (MonadReader r m, HasType FS r)
+   => MonadFileSystem (FileSystemT m) where
+  readFile
+    path = FileSystemT $ view (typed @FS) >>= \(FileSystem files) -> maybe
+    (error $ "readFile: no such file ‘" ++ T.unpack path ++ "’")
+    return
+    (lookup path files)
 
-runArgumentsFileSystem :: [Text] -> FileSystem -> ReaderT ([Text],FileSystem) m a -> m a
+runArgumentsFileSystem :: [Text] -> FS -> ReaderT ([Text], FS) m a -> m a
 runArgumentsFileSystem args fs = flip runReaderT (args, fs)
 
 --------------------------------------------------------------------------------
 -- Logger
-
 newtype LoggerT m a = LoggerT (m a)
-  deriving (Functor, Applicative, Monad)
+  deriving ( Functor, Applicative, Monad )
 
-instance (MonadWriter [ByteString] m)
-  => MonadLogger (LoggerT m) where
+instance (MonadWriter [ByteString] m) => MonadLogger (LoggerT m) where
   monadLoggerLog _ _ _ str = LoggerT $ tell [fromLogStr (toLogStr str)]
 
 runLoggerT :: WriterT [ByteString] m a -> m (a, [ByteString])
@@ -82,24 +79,21 @@ runLoggerT = runWriterT
 
 --------------------------------------------------------------------------------
 -- Clock
-
 data ClockState
-  = ClockStopped !UTCTime
-  | ClockTick !UTCTime ClockState
-  | ClockEndOfTime
-  deriving (Eq, Show, Generic)
+   = ClockStopped !UTCTime
+   | ClockTick !UTCTime ClockState
+   | ClockEndOfTime
+  deriving ( Eq, Show, Generic )
 
 newtype ClockT m a = ClockT (m a)
-  deriving (Functor, Applicative, Monad)
+  deriving ( Functor, Applicative, Monad )
 
-instance (MonadState s m, HasType ClockState s)
-    => MonadTime (ClockT m) where
-  currentTime =
-    let clock = the @ClockState
-    in  ClockT $ use clock >>= \case
-          ClockStopped t -> return t
-          ClockTick t s  -> clock .= s >> return t
-          ClockEndOfTime -> error "currentTime: end of time"
+instance (MonadState s m, HasType ClockState s) => MonadTime (ClockT m) where
+  currentTime = let clock = the @ClockState
+                in ClockT $ use clock >>= \case
+                     ClockStopped t -> return t
+                     ClockTick t s  -> clock .= s >> return t
+                     ClockEndOfTime -> error "currentTime: end of time"
 
 -- -- | Runs a computation with a constant time that never changes.
 runStoppedClockT :: UTCTime -> State ClockState a -> a
@@ -114,7 +108,8 @@ runTickingClockT = runTickingClockT' 1
 -- -- time the time is read.
 runTickingClockT' :: NominalDiffTime -> UTCTime -> State ClockState a -> a
 runTickingClockT' d t m = evalState m (ticks t)
-  where ticks t' = ClockTick t' (ticks (addUTCTime d t'))
+  where
+    ticks t' = ClockTick t' (ticks (addUTCTime d t'))
 
 -- -- | Runs a computation with a clock that replays the provided list of times, in
 -- -- order. If the list of times is exhausted, 'currentTime' will throw an
