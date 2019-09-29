@@ -12,10 +12,7 @@ import Control.Monad.Freer.Error
 import Control.Monad.Freer.Input
 import Control.Monad.Freer.Output
 import Control.Monad.Freer.State
-import Control.Monad.Logger ( MonadLogger(..) )
-import Control.Monad.Time ( MonadTime(..) )
-
-import Data.ByteString ( ByteString )
+import qualified Control.Monad.Trans.State.Strict as S
 import Data.Text ( Text )
 import qualified Data.Text as T
 import Data.Time.Clock ( NominalDiffTime, UTCTime, addUTCTime )
@@ -24,7 +21,6 @@ import GHC.Generics
 
 import MTLStyleExample.Interfaces
 
-import System.Log.FastLogger ( fromLogStr, toLogStr )
 
 runArguments
    :: Member (Input [Text]) eff => Eff (Arguments : eff) x -> Eff eff x
@@ -32,15 +28,12 @@ runArguments = interpret $ \case GetArgs -> input
 
 --------------------------------------------------------------------------------
 -- Logger
-data Logger a where
-   Log :: ByteString -> Logger ()
-
-instance (Member Logger effs) => MonadLogger (Eff effs) where
-  monadLoggerLog _ _ _ str = send $ Log (fromLogStr (toLogStr str))
-
 runLogger
-   :: Member (Output ByteString) eff => Eff (Logger : eff) x -> Eff eff x
+   :: Member (Output Text) eff => Eff (Logger : eff) x -> Eff eff x
 runLogger = interpret $ \case Log msg -> output msg
+
+-- runLogger :: Eff (Logger : r) x -> Eff r ([Text], x)
+-- runLogger m = stateful (\case Log msg -> S.modify' (msg:)) [] m
 
 --------------------------------------------------------------------------------
 -- FileSystem
@@ -65,12 +58,6 @@ data ClockState
    | ClockEndOfTime
   deriving ( Eq, Show, Generic )
 
-data Clock a where
-   CurrentTime :: Clock UTCTime
-
-instance (Member Clock effs) => MonadTime (Eff effs) where
-  currentTime = send CurrentTime
-
 runClock :: Member (Error String) eff
          => Eff (Clock : eff) x
          -> Eff (State ClockState : eff) x
@@ -79,6 +66,7 @@ runClock = reinterpret $ \case
     ClockStopped t' -> return t'
     ClockTick t' s  -> put s >> return t'
     ClockEndOfTime  -> throwError @String "currentTime: end of time"
+{-# INLINE runClock #-}
 
 runTickingClock :: Member (Error String) eff
                 => UTCTime
@@ -88,6 +76,7 @@ runTickingClock :: Member (Error String) eff
 runTickingClock t d = evalState (ticks t) . runClock
   where
     ticks t' = ClockTick t' (ticks (addUTCTime d t'))
+{-# INLINE runTickingClock #-}
 
 runStoppedClock
    :: Member (Error String) eff => UTCTime -> Eff (Clock : eff) x -> Eff eff x

@@ -25,7 +25,7 @@ import Data.Time.Clock ( NominalDiffTime, UTCTime, addUTCTime )
 
 import GHC.Generics
 
-import MTLStyleExample.Interfaces hiding ( Arguments, FileSystem )
+import MTLStyleExample.Interfaces hiding ( Arguments, FileSystem, Clock, Logger)
 
 import Polysemy
 import Polysemy.Error

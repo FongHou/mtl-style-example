@@ -7,7 +7,6 @@ import Control.Monad.Freer.Error
 import Control.Monad.Freer.Input
 import Control.Monad.Freer.Output
 
-import Data.ByteString ( ByteString )
 import Data.Function ( (&) )
 import Data.Text ( Text )
 import Data.Time.Clock.POSIX ( posixSecondsToUTCTime )
@@ -23,9 +22,9 @@ spec = describe "main" $ do
   let Right (logs, ()) = MTLStyleExample.Main.main
         & runArguments
         & runFileSystem
-        & runLogger
         & runTickingClock (posixSecondsToUTCTime 0) 1
-        & runOutputList @ByteString
+        & runLogger
+        & runOutputList @Text
         & runError @String
         & runInputConst (FS [("sample.txt", "World")])
         & runInputConst ["sample.txt" :: Text]
