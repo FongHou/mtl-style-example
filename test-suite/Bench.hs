@@ -49,7 +49,7 @@ runAppM (AppM x) = runStderrLoggingT x
 runFree :: [Text] -> Eff _ a -> AppM _
 runFree args = runM . runClock . runFileSystem . runLogger . runArguments
   where
-    runArguments = runInputConst @[Text] args . Freer.runArguments
+    runArguments = runInputConst args . Freer.runArguments
     runLogger = ignoreOutput @Text . Freer.runLogger
     runFileSystem = subsume @AppM $ \case (ReadFile f) -> MTL.readFile f
     runClock = subsume @AppM $ \case CurrentTime -> currentTime

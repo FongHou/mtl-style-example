@@ -12,7 +12,6 @@ import Control.Monad.Freer.Error
 import Control.Monad.Freer.Input
 import Control.Monad.Freer.Output
 import Control.Monad.Freer.State
-import qualified Control.Monad.Trans.State.Strict as S
 import Data.Text ( Text )
 import qualified Data.Text as T
 import Data.Time.Clock ( NominalDiffTime, UTCTime, addUTCTime )
