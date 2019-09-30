@@ -46,7 +46,7 @@ newtype AppM a = AppM (LoggingT IO a)
 runAppM :: AppM a -> IO a
 runAppM (AppM x) = runStderrLoggingT x
 
-runFree :: [Text] -> Eff _ a -> AppM _
+runFree :: [Text] -> Eff _ a -> AppM a
 runFree args = runM . runClock . runFileSystem . runLogger . runArguments
   where
     runArguments = runInputConst args . Freer.runArguments
@@ -54,8 +54,7 @@ runFree args = runM . runClock . runFileSystem . runLogger . runArguments
     runFileSystem = subsume @AppM $ \case (ReadFile f) -> MTL.readFile f
     runClock = subsume @AppM $ \case CurrentTime -> currentTime
 
-
-freer2 :: IO _
+freer2 :: IO ()
 freer2 = MTLStyleExample.Main.main & runFree ["/tmp/world.txt"] & runAppM
 
 mtl :: ((), [ByteString])
@@ -75,30 +74,34 @@ cps = MTLStyleExample.Main.main
    & CPS.runLoggerT
    & CPS.runTickingClockT (posixSecondsToUTCTime 0)
 
-freer :: Either String _
+freer :: _
 freer = MTLStyleExample.Main.main
    & Freer.runArguments
    & Freer.runInputConst ["sample.txt" :: Text]
    & Freer.runFileSystem
    & Freer.runInputConst (Freer.FS [("sample.txt", "World")])
    & Freer.runTickingClock (posixSecondsToUTCTime 0) 1
-   & Freer.runError @String
+   -- & Freer.runError @String
    & Freer.runLogger
-   & Freer.outputToTrace @Text
-   & Freer.ignoreTrace
+   & Freer.runOutputList @Text
+   & Freer.runError @String
    & Freer.run
 
-polysemy :: Either String ([ByteString], ())
+polysemy :: _
 polysemy = MTLStyleExample.Main.main
    & Poly.runArguments
    & Poly.runInputConst ["sample.txt" :: Text]
    & Poly.runFileSystem
    & Poly.runInputConst (Poly.FS [("sample.txt", "World")])
    & Poly.runTickingClock (posixSecondsToUTCTime 0) 1
+   -- & Poly.runError @String
    & Poly.runLogger
    & Poly.runOutputList @ByteString
    & Poly.runError @String
    & Poly.run
+
+once :: Monad m => m a -> Int -> m _
+once m _ = m
 
 runs :: Monad m => m a -> Int -> m Int
 runs m n' = do
@@ -112,13 +115,13 @@ main :: IO ()
 main = defaultMain
   [ bgroup
       "effect-style-bench"
-      [ bench "freer" $ whnf (runs freer) 1
-      , bench "freer2" $ whnf (runs freer) 1
-      , bench "mtl" $ whnf (runs mtl) 1
-      , bench "cps" $ whnf (runs cps) 1
-      , bench "polysemy" $ whnf (runs polysemy) 1
-      , bench "freerN" $ nf (runs freer) n
-      , bench "freer2N" $ nfAppIO (runs freer2) n
-      , bench "mtlN" $ nf (runs mtl) n
-      , bench "cpsN" $ nf (runs cps) n
-      , bench "polysemyN" $ nf (runs polysemy) n]]
+      [ bench "freer" $ nf (once freer) n
+      , bench "polysemy" $ nf (once polysemy) n
+      , bench "freer2" $ nfAppIO (once freer2) n
+      , bench "mtl" $ nf (once mtl) n
+      , bench "cps" $ nf (once cps) n
+      , bench "freer/1000" $ nf (runs freer) n
+      , bench "polysemy/1000" $ nf (runs polysemy) n
+      , bench "freer2/1000" $ nfAppIO (runs freer2) n
+      , bench "mtl/1000" $ nf (runs mtl) n
+      , bench "cps/1000" $ nf (runs cps) n]]

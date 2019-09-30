@@ -42,6 +42,8 @@ library
     , text
     , time
     , transformers
+    , transformers-base
+    , writer-cps-mtl
     , gauge
     , hspec
   default-language: Haskell2010
@@ -69,12 +71,14 @@ executable effect-style-example
     , text
     , time
     , transformers
+    , transformers-base
   default-language: Haskell2010
 
 test-suite effect-style-test-suite
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      MonadUnlift
       FreerExample.MainSpec
       FreerExample.Test.Stubs
       MTLStyleExample.MainSpec
@@ -105,6 +109,7 @@ test-suite effect-style-test-suite
     , text
     , time
     , transformers
+    , transformers-base
     , writer-cps-mtl
   default-language: Haskell2010
 
