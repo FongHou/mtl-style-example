@@ -59,46 +59,44 @@ freer2 = MTLStyleExample.Main.main & runFree ["/tmp/world.txt"] & runAppM
 
 mtl :: ((), [ByteString])
 mtl = MTLStyleExample.Main.main
-   & MTL.runArgumentsT ["sample.txt"]
-   & MTL.runFileSystemT [("sample.txt", "Alyssa")]
-   & MTL.runLoggerT
-   & MTL.runTickingClockT (posixSecondsToUTCTime 0)
-   & runIdentity
+  & MTL.runArgumentsT ["sample.txt"]
+  & MTL.runFileSystemT [("sample.txt", "Alyssa")]
+  & MTL.runLoggerT
+  & MTL.runTickingClockT (posixSecondsToUTCTime 0)
+  & runIdentity
 
 cps :: ((), [ByteString])
-cps = MTLStyleExample.Main.main
-   & CPS.runTest
-   & CPS.runArgumentsFileSystem
-     ["sample.txt"]
-     (FileSystem [("sample.txt", "World")])
-   & CPS.runLoggerT
-   & CPS.runTickingClockT (posixSecondsToUTCTime 0)
+cps = CPS.runTest
+  MTLStyleExample.Main.main
+  ["sample.txt"]
+  (FileSystem [("sample.txt", "World")])
+  (posixSecondsToUTCTime 0)
 
 freer :: _
 freer = MTLStyleExample.Main.main
-   & Freer.runArguments
-   & Freer.runInputConst ["sample.txt" :: Text]
-   & Freer.runFileSystem
-   & Freer.runInputConst (Freer.FS [("sample.txt", "World")])
-   & Freer.runTickingClock (posixSecondsToUTCTime 0) 1
-   -- & Freer.runError @String
-   & Freer.runLogger
-   & Freer.runOutputList @Text
-   & Freer.runError @String
-   & Freer.run
+  & Freer.runArguments
+  & Freer.runInputConst ["sample.txt" :: Text]
+  & Freer.runFileSystem
+  & Freer.runInputConst (Freer.FS [("sample.txt", "World")])
+  & Freer.runTickingClock (posixSecondsToUTCTime 0) 1
+  -- & Freer.runError @String
+  & Freer.runLogger
+  & Freer.runOutputList @Text
+  & Freer.runError @String
+  & Freer.run
 
 polysemy :: _
 polysemy = MTLStyleExample.Main.main
-   & Poly.runArguments
-   & Poly.runInputConst ["sample.txt" :: Text]
-   & Poly.runFileSystem
-   & Poly.runInputConst (Poly.FS [("sample.txt", "World")])
-   & Poly.runTickingClock (posixSecondsToUTCTime 0) 1
-   -- & Poly.runError @String
-   & Poly.runLogger
-   & Poly.runOutputList @ByteString
-   & Poly.runError @String
-   & Poly.run
+  & Poly.runArguments
+  & Poly.runInputConst ["sample.txt" :: Text]
+  & Poly.runFileSystem
+  & Poly.runInputConst (Poly.FS [("sample.txt", "World")])
+  & Poly.runTickingClock (posixSecondsToUTCTime 0) 1
+  -- & Poly.runError @String
+  & Poly.runLogger
+  & Poly.runOutputList @ByteString
+  & Poly.runError @String
+  & Poly.run
 
 once :: Monad m => m a -> Int -> m _
 once m _ = m

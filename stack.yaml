@@ -12,8 +12,7 @@ extra-deps:
 - unagi-chan-0.4.1.2
 - writer-cps-mtl-0.1.1.6
 - writer-cps-transformers-0.5.6.1
-- git: https://github.com/FongHou/freer-simple.git
-  commit: 52d92c864c1db46582a2053a9f8e45c0ec6a8f52
+- ../freer-simple
 
 flags: {}
 

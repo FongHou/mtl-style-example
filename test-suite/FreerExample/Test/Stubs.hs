@@ -31,14 +31,11 @@ runLogger
    :: Member (Output Text) eff => Eff (Logger : eff) x -> Eff eff x
 runLogger = interpret $ \case Log msg -> output msg
 
--- runLogger :: Eff (Logger : r) x -> Eff r ([Text], x)
--- runLogger m = stateful (\case Log msg -> S.modify' (msg:)) [] m
-
 --------------------------------------------------------------------------------
 -- FileSystem
 newtype FS = FS [(Text, Text)]
 
-runFileSystem :: Members [Input FS, (Error String)] eff
+runFileSystem :: Members [Input FS, Error String] eff
               => Eff (FileSystem : eff) x
               -> Eff eff x
 runFileSystem = interpret $ \case

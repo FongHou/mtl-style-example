@@ -2,25 +2,21 @@
 
 module MTLStyleExample2.MainSpec where
 
-import           Data.Function ((&))
-import           Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import Data.Time.Clock.POSIX ( posixSecondsToUTCTime )
 
-import           MTLStyleExample.Main
+import MTLStyleExample.Main
 
-import           MTLStyleExample2.Test.Stubs
+import MTLStyleExample2.Test.Stubs
 
-import           Test.Hspec
+import Test.Hspec
 
 spec :: Spec
 spec = describe "main" $ do
   let epoch = posixSecondsToUTCTime 0
       ((), logMessages) = runTest main
-        & runArgumentsFileSystem
-          ["sample.txt"]
-          (FileSystem [("sample.txt", "World")])
-        & runLoggerT
-        & runTickingClockT epoch
-  -- & runStoppedClockT epoch
+        ["sample.txt"]
+        (FileSystem [("sample.txt", "World")])
+        epoch
   it "prints two log messages" $ length logMessages `shouldBe` 2
   it "prints a greeting as the first message"
     $ (logMessages !! 0) `shouldBe` "Hello, World!"
