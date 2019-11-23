@@ -14,7 +14,7 @@ import Prelude hiding ( readFile )
 --------------------------------------------------------------------------------
 -- Logic
 main
-   :: (MonadArguments m, MonadFileSystem m, MonadLogger m, MonadTime m) => m ()
+  :: (MonadArguments m, MonadFileSystem m, MonadLogger m, MonadTime m) => m ()
 main = do
   startTime <- currentTime
   fileName <- getArgs
@@ -23,4 +23,4 @@ main = do
   endTime <- currentTime
   let duration = endTime `diffUTCTime` startTime
   logInfoN
-     $ T.pack (show (round (duration * 1000) :: Integer)) <> " milliseconds"
+    $ T.pack (show (round (duration * 1000) :: Integer)) <> " milliseconds"

@@ -33,7 +33,7 @@ type TestM = RWS ([Text], FS) [ByteString] (ClockState, [ByteString])
 newtype Test a = Test (TestM a)
   deriving ( Functor, Applicative, Monad )
   deriving MonadArguments via (ArgumentsT TestM)
-  deriving MonadLogger via (LoggerT (TestM))
+  deriving MonadLogger via (LoggerT TestM)
   deriving MonadFileSystem via (FileSystemT TestM)
   deriving MonadTime via (ClockT TestM)
 
