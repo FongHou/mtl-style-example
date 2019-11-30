@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module MTLStyleExample.Interfaces where
 
@@ -33,6 +34,8 @@ class Monad m => MonadArguments m where
 data Arguments a where
    GetArgs :: Arguments [Text]
 
+deriving instance Show (Arguments a)
+
 instance Member Arguments effs => MonadArguments (Eff effs) where
   getArgs = send GetArgs
 
@@ -49,17 +52,23 @@ class Monad m => MonadFileSystem m where
 data FileSystem a where
    ReadFile :: Text -> FileSystem Text
 
+deriving instance Show (FileSystem a)
+
 instance Member FileSystem effs => MonadFileSystem (Eff effs) where
   readFile = send . ReadFile
 
 data Clock a where
    CurrentTime :: Clock UTCTime
 
+deriving instance Show (Clock a)
+
 instance (Member Clock effs) => MonadTime (Eff effs) where
   currentTime = send CurrentTime
 
 data Logger a where
    Log :: Text -> Logger ()
+
+deriving instance Show (Logger a)
 
 instance (Member Logger effs) => MonadLogger (Eff effs) where
   monadLoggerLog _ _ _ str =
