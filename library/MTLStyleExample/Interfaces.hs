@@ -2,11 +2,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module MTLStyleExample.Interfaces where
 
 import Control.Monad.Freer ( Eff, Member, send )
 import Control.Monad.Logger
-import Control.Monad.Logger ( MonadLogger(..) )
 import Control.Monad.Reader ( ReaderT )
 import Control.Monad.State ( StateT )
 import Control.Monad.Time ( MonadTime(..) )
@@ -32,7 +33,7 @@ class Monad m => MonadArguments m where
   getArgs = lift getArgs
 
 data Arguments a where
-   GetArgs :: Arguments [Text]
+  GetArgs :: Arguments [Text]
 
 deriving instance Show (Arguments a)
 
@@ -46,11 +47,11 @@ class Monad m => MonadFileSystem m where
   -- an exception.
   readFile :: Text -> m Text
   default readFile
-     :: (MonadTrans t, MonadFileSystem m', m ~ t m') => Text -> m Text
+    :: (MonadTrans t, MonadFileSystem m', m ~ t m') => Text -> m Text
   readFile = lift . readFile
 
 data FileSystem a where
-   ReadFile :: Text -> FileSystem Text
+  ReadFile :: Text -> FileSystem Text
 
 deriving instance Show (FileSystem a)
 
@@ -58,7 +59,7 @@ instance Member FileSystem effs => MonadFileSystem (Eff effs) where
   readFile = send . ReadFile
 
 data Clock a where
-   CurrentTime :: Clock UTCTime
+  CurrentTime :: Clock UTCTime
 
 deriving instance Show (Clock a)
 
@@ -66,13 +67,13 @@ instance (Member Clock effs) => MonadTime (Eff effs) where
   currentTime = send CurrentTime
 
 data Logger a where
-   Log :: Text -> Logger ()
+  Log :: Text -> Logger ()
 
 deriving instance Show (Logger a)
 
 instance (Member Logger effs) => MonadLogger (Eff effs) where
   monadLoggerLog _ _ _ str =
-     send $ Log $ T.decodeUtf8 (fromLogStr (toLogStr str))
+    send $ Log $ T.decodeUtf8 (fromLogStr (toLogStr str))
 
 -------------------------------------------------------------------------------
 -- | MTL

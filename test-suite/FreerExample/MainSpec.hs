@@ -21,7 +21,8 @@ import Test.Hspec
 
 spec :: Spec
 spec = describe "main" $ do
-  let Right (logs, ()) = MTLStyleExample.Main.main
+  let (logs, ()) = either (error "spec error") id
+        $ MTLStyleExample.Main.main
         & runArguments
         & runInputConst ["sample.txt" :: Text]
         & runFileSystem
