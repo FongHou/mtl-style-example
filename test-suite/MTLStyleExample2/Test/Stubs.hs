@@ -28,17 +28,17 @@ import MTLStyleExample.Interfaces
 
 import System.Log.FastLogger ( fromLogStr, toLogStr )
 
-type TestM = RWS ([Text], FS) [ByteString] (ClockState, [ByteString])
+type Test = RWS ([Text], FS) [ByteString] (ClockState, [ByteString])
 
-newtype Test a = Test (TestM a)
+newtype TestM a = TestM (Test a)
   deriving ( Functor, Applicative, Monad )
-  deriving MonadArguments via (ArgumentsT TestM)
-  deriving MonadLogger via (LoggerT TestM)
-  deriving MonadFileSystem via (FileSystemT TestM)
-  deriving MonadTime via (ClockT TestM)
+  deriving MonadArguments via (ArgumentsT Test)
+  deriving MonadLogger via (LoggerT Test)
+  deriving MonadFileSystem via (FileSystemT Test)
+  deriving MonadTime via (ClockT Test)
 
-runTest :: Test a -> [Text] -> FS -> UTCTime -> (a, [ByteString])
-runTest (Test m) args fs t = evalRWS m (args, fs) ((ticks t), [])
+runTest :: TestM a -> [Text] -> FS -> UTCTime -> (a, [ByteString])
+runTest (TestM m) args fs t = evalRWS m (args, fs) ((ticks t), [])
   where
     ticks t' = ClockTick t' (ticks (addUTCTime 1 t'))
 

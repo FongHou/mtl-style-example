@@ -8,7 +8,6 @@ import Control.Monad.Freer as Freer
 import Control.Monad.Freer.Error as Freer
 import Control.Monad.Freer.Input as Freer
 import Control.Monad.Freer.Output as Freer
-import Control.Monad.Freer.Trace as Freer
 import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Control.Monad.Time ( MonadTime(..) )
@@ -19,7 +18,7 @@ import Data.Functor.Identity ( runIdentity )
 import Data.Text ( Text )
 import Data.Time.Clock.POSIX ( posixSecondsToUTCTime )
 
-import qualified FreerExample.Test.Stubs as Freer
+import FreerExample.Test.Stubs as Freer
 
 import Gauge
 import Gauge.Main ( defaultMain )

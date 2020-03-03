@@ -1,10 +1,10 @@
-resolver: lts-13.30
+resolver: lts-14.16
 
 packages: 
 - .
 extra-deps:
 - generic-lens-1.2.0.0
-- polysemy-1.2.1.0
+- polysemy-1.2.3.0
 - first-class-families-0.6.0.0
 - th-abstraction-0.3.1.0
 - type-errors-0.2.0.0
