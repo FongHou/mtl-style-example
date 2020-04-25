@@ -45,17 +45,6 @@ newtype AppM a = AppM (LoggingT IO a)
 runAppM :: AppM a -> IO a
 runAppM (AppM x) = runStderrLoggingT x
 
-runFree :: [Text] -> Eff _ a -> AppM a
-runFree args = runM . runClock . runFileSystem . runLogger . runArguments
-  where
-    runArguments = runInputConst args . Freer.runArguments
-    runLogger = ignoreOutput @Text . Freer.runLogger
-    runFileSystem = subsume @AppM $ \case (ReadFile f) -> MTL.readFile f
-    runClock = subsume @AppM $ \case CurrentTime -> currentTime
-
-freer2 :: IO ()
-freer2 = MTLStyleExample.Main.main & runFree ["/tmp/world.txt"] & runAppM
-
 mtl :: ((), [ByteString])
 mtl = MTLStyleExample.Main.main
   & MTL.runArgumentsT ["sample.txt"]
@@ -112,13 +101,11 @@ main :: IO ()
 main = defaultMain
   [ bgroup
       "effect-style-bench"
-      [ bench "freer" $ nf (once freer) n
+      [ bench "mtl" $ nf (once mtl) n
+      , bench "freer" $ nf (once freer) n
       , bench "polysemy" $ nf (once polysemy) n
-      , bench "freer2" $ nfAppIO (once freer2) n
-      , bench "mtl" $ nf (once mtl) n
       , bench "cps" $ nf (once cps) n
+      , bench "mtl/1000" $ nf (runs mtl) n
       , bench "freer/1000" $ nf (runs freer) n
       , bench "polysemy/1000" $ nf (runs polysemy) n
-      , bench "freer2/1000" $ nfAppIO (runs freer2) n
-      , bench "mtl/1000" $ nf (runs mtl) n
       , bench "cps/1000" $ nf (runs cps) n]]

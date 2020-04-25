@@ -36,6 +36,7 @@ deriving instance Show (Arguments a)
 
 instance Member Arguments effs => MonadArguments (Eff effs) where
   getArgs = send GetArgs
+  {-# INLINE getArgs #-}
 
 runArguments
   :: Member (Input [Text]) eff => Eff (Arguments : eff) x -> Eff eff x
@@ -52,6 +53,7 @@ deriving instance Show (Logger a)
 instance (Member Logger effs) => MonadLogger (Eff effs) where
   monadLoggerLog _ _ _ str =
     send $ Log $ T.decodeUtf8 (fromLogStr (toLogStr str))
+  {-# INLINE monadLoggerLog #-}
 
 runLogger :: Member (Output Text) eff => Eff (Logger : eff) x -> Eff eff x
 runLogger = interpret $ \case
@@ -66,6 +68,8 @@ deriving instance Show (FileSystem a)
 
 instance Member FileSystem effs => MonadFileSystem (Eff effs) where
   readFile = send . ReadFile
+  {-# INLINE readFile #-}
+
 newtype FS = FS [(Text, Text)]
 
 runFileSystem :: Members [Input FS, Error String] eff
@@ -88,6 +92,7 @@ deriving instance Show (Clock a)
 
 instance (Member Clock effs) => MonadTime (Eff effs) where
   currentTime = send CurrentTime
+  {-# INLINE currentTime #-}
 
 data ClockState
   = ClockStopped !UTCTime

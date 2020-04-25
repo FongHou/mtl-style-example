@@ -51,7 +51,7 @@ runFileSystemT fs (FileSystemT x) = runReaderT x fs
 
 instance Monad m => MonadFileSystem (FileSystemT m) where
   readFile path = FileSystemT $ ask >>= \files -> maybe
-    (fail $ "readFile: no such file ‘" ++ T.unpack path ++ "’")
+    (error $ "readFile: no such file ‘" ++ T.unpack path ++ "’")
     return
     (lookup path files)
 
@@ -108,5 +108,5 @@ instance Monad m => MonadTime (ClockT m) where
   currentTime = ClockT $ get >>= \case
     ClockStopped t -> return t
     ClockTick t s  -> put s >> return t
-    ClockEndOfTime -> fail "currentTime: end of time"
+    ClockEndOfTime -> error "currentTime: end of time"
 
