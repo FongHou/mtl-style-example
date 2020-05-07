@@ -62,8 +62,7 @@ cps = CPS.runTest
 
 freer :: _
 freer = MTLStyleExample.Main.main
-  & Freer.runArguments
-  & Freer.runInputConst ["sample.txt" :: Text]
+  & Freer.runArguments ["sample.txt" :: Text]
   & Freer.runFileSystem
   & Freer.runInputConst (Freer.FS [("sample.txt", "World")])
   & Freer.runTickingClock (posixSecondsToUTCTime 0) 1
