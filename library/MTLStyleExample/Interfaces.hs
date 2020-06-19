@@ -1,23 +1,19 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module MTLStyleExample.Interfaces where
 
 import Control.Monad.Logger
-import Control.Monad.Reader ( ReaderT )
-import Control.Monad.State ( StateT )
-import Control.Monad.Trans.Class ( MonadTrans(..) )
-import Control.Monad.Writer ( WriterT )
-
+import Control.Monad.Reader (ReaderT)
+import Control.Monad.State (StateT)
+import Control.Monad.Trans.Class (MonadTrans (..))
+import Control.Monad.Writer (WriterT)
 import qualified Data.Text as T
-import Data.Text ( Text )
+import Data.Text (Text)
 import qualified Data.Text.IO as T
-
-import Prelude hiding ( readFile )
-
 import qualified System.Environment as IO
+import Prelude hiding (readFile)
 
 -- | A class of monads that can access command-line arguments.
 class Monad m => MonadArguments m where
@@ -32,11 +28,12 @@ class Monad m => MonadFileSystem m where
   -- not exist, is not accessible, or is improperly encoded, this method throws
   -- an exception.
   readFile :: Text -> m Text
-  default readFile
-    :: (MonadTrans t, MonadFileSystem m', m ~ t m') => Text -> m Text
+  default readFile ::
+    (MonadTrans t, MonadFileSystem m', m ~ t m') => Text -> m Text
   readFile = lift . readFile
 
 -------------------------------------------------------------------------------
+
 -- | MTL
 instance MonadArguments IO where
   getArgs = map T.pack <$> IO.getArgs
@@ -59,4 +56,3 @@ instance MonadFileSystem m => MonadFileSystem (ReaderT r m)
 instance MonadFileSystem m => MonadFileSystem (StateT s m)
 
 instance (MonadFileSystem m, Monoid w) => MonadFileSystem (WriterT w m)
-

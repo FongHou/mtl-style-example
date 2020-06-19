@@ -8,7 +8,20 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module FreerExample.Test.Stubs where
+module FreerExample.Test.Stubs
+  ( runArguments,
+    runLogger,
+    runFileSystem,
+    runTickingClock,
+    runStoppedClock,
+    runPresetClock,
+    Arguments,
+    Clock,
+    Logger,
+    FileSystem,
+    FS (..),
+  )
+where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.Error
@@ -31,7 +44,6 @@ deriving instance Show (Arguments a)
 
 instance Member Arguments effs => MonadArguments (Eff effs) where
   getArgs = send GetArgs
-  {-# INLINE getArgs #-}
 
 runArguments ::
   [Text] -> Eff (Arguments : eff) x -> Eff eff x
@@ -50,7 +62,6 @@ deriving instance Show (Logger a)
 instance (Member Logger effs) => MonadLogger (Eff effs) where
   monadLoggerLog _ _ _ str =
     send $ Log $ T.decodeUtf8 (fromLogStr (toLogStr str))
-  {-# INLINE monadLoggerLog #-}
 
 runLogger :: Member (Output Text) eff => Eff (Logger : eff) x -> Eff eff x
 runLogger = interpret $ \case
@@ -65,21 +76,25 @@ deriving instance Show (FileSystem a)
 
 instance Member FileSystem effs => MonadFileSystem (Eff effs) where
   readFile = send . ReadFile
-  {-# INLINE readFile #-}
 
 newtype FS = FS [(Text, Text)]
 
 runFileSystem ::
-  Members [Input FS, Error String] eff =>
+  Members '[Error String] eff =>
+  FS ->
   Eff (FileSystem : eff) x ->
   Eff eff x
-runFileSystem = interpret $ \case
-  ReadFile path -> do
-    FS files <- input @FS
-    maybe
-      (throwError $ "readFile: no such file '" <> T.unpack path <> "'")
-      return
-      (lookup path files)
+runFileSystem fs =
+  runInputConst fs
+    . reinterpret
+      ( \case
+          ReadFile path -> do
+            FS files <- input @FS
+            maybe
+              (throwError $ "readFile: no such file '" <> T.unpack path <> "'")
+              return
+              (lookup path files)
+      )
 
 --------------------------------------------------------------------------------
 -- Clock
@@ -91,7 +106,6 @@ deriving instance Show (Clock a)
 
 instance (Member Clock effs) => MonadTime (Eff effs) where
   currentTime = send CurrentTime
-  {-# INLINE currentTime #-}
 
 data ClockState
   = ClockStopped !UTCTime
@@ -104,11 +118,11 @@ runClock ::
   Eff (Clock : eff) x ->
   Eff (State ClockState : eff) x
 runClock = reinterpret $ \case
-  CurrentTime -> get >>= \case
-    ClockStopped t' -> return t'
-    ClockTick t' s -> put s >> return t'
-    ClockEndOfTime -> throwError @String "currentTime: end of time"
-{-# INLINE runClock #-}
+  CurrentTime ->
+    get >>= \case
+      ClockStopped t' -> return t'
+      ClockTick t' s -> put s >> return t'
+      ClockEndOfTime -> throwError @String "currentTime: end of time"
 
 runTickingClock ::
   Member (Error String) eff =>
@@ -119,7 +133,6 @@ runTickingClock ::
 runTickingClock t d = evalState (ticks t) . runClock
   where
     ticks t' = ClockTick t' (ticks (addUTCTime d t'))
-{-# INLINE runTickingClock #-}
 
 runStoppedClock ::
   Member (Error String) eff => UTCTime -> Eff (Clock : eff) x -> Eff eff x

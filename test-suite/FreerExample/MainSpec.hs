@@ -4,14 +4,12 @@ module FreerExample.MainSpec where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.Error
-import Control.Monad.Freer.Input
 import Control.Monad.Freer.Output
 import Control.Monad.Freer.Trace
 import Data.Function ((&))
 import Data.Text (Text)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import FreerExample.Test.Stubs
-import MTLStyleExample.Interfaces
 import MTLStyleExample.Main
 import Test.Hspec
 
@@ -21,8 +19,7 @@ spec = describe "main" $ do
         either (error "spec error") id $
           MTLStyleExample.Main.main
             & runArguments ["sample.txt" :: Text]
-            & runFileSystem
-            & runInputConst (FS [("sample.txt", "World")])
+            & runFileSystem (FS [("sample.txt", "World")])
             & runTickingClock (posixSecondsToUTCTime 0) 1
             & runLogger
             & runOutputList @Text
@@ -43,8 +40,7 @@ trace =
     & traceEffect @Logger
     & runTrace
     & runArguments ["sample.txt" :: Text]
-    & runFileSystem
-    & runInputConst (FS [("sample.txt", "World")])
+    & runFileSystem (FS [("sample.txt", "World")])
     & runTickingClock (posixSecondsToUTCTime 0) 1
     & runLogger
     & runOutputList @Text

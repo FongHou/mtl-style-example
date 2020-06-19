@@ -6,7 +6,6 @@ module Main (main) where
 import Control.Monad
 import Control.Monad.Freer as Freer
 import Control.Monad.Freer.Error as Freer
-import Control.Monad.Freer.Input as Freer
 import Control.Monad.Freer.Output as Freer
 import Data.ByteString (ByteString)
 import Data.Function ((&))
@@ -29,8 +28,8 @@ mtl =
   MTLStyleExample.Main.main
     & MTL.runArgumentsT ["sample.txt"]
     & MTL.runFileSystemT [("sample.txt", "Alyssa")]
-    & MTL.runLoggerT
     & MTL.runTickingClockT (posixSecondsToUTCTime 0)
+    & MTL.runLoggerT
     & runIdentity
 
 mtl2 :: ((), [ByteString])
@@ -45,8 +44,7 @@ freer :: (Either String ([Text], ()))
 freer =
   MTLStyleExample.Main.main
     & Freer.runArguments ["sample.txt" :: Text]
-    & Freer.runFileSystem
-    & Freer.runInputConst (Freer.FS [("sample.txt", "World")])
+    & Freer.runFileSystem (Freer.FS [("sample.txt", "World")])
     & Freer.runTickingClock (posixSecondsToUTCTime 0) 1
     & Freer.runLogger
     & Freer.runOutputList @Text

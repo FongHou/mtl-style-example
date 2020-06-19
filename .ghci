@@ -1,56 +1,10 @@
--- import Prelude (return, ($), (++))
-:def hoogle \x -> return $ ":!hoogle --count=10 \"" ++ x ++ "\""
-:def hdoc   \x -> return $ ":!hoogle --info \"" ++ x ++ "\""
+:set -Wall
 
--- :set -package pretty-simple
-import Text.Pretty.Simple (pPrint)
-:def pp   \_ -> return (":set -interactive-print pPrint")
-:def nopp \_ -> return (":set -interactive-print System.IO.print")
+:set -Wno-missing-signatures
+:set -Wno-missing-export-lists
+:set -Wno-name-shadowing
+:set -Wno-partial-type-signatures
+:set -Wno-unused-imports
+:set -Wno-unused-top-binds
 
-:set prompt  "\ESC[0;36mλ> \ESC[m"
-:set prompt-cont "\ESC[0;36m|  \ESC[m"
-
-:seti -XBangPatterns
-:seti -XBinaryLiterals
-:seti -XConstraintKinds
-:seti -XDataKinds
-:seti -XDefaultSignatures
-:seti -XDeriveFoldable
-:seti -XDeriveFunctor
-:seti -XDeriveGeneric
-:seti -XDeriveTraversable
-:seti -XDoAndIfThenElse
-:seti -XEmptyDataDecls
-:seti -XFlexibleContexts
-:seti -XFlexibleInstances
-:seti -XFunctionalDependencies
-:seti -XGADTs
-:seti -XGeneralizedNewtypeDeriving
-:seti -XInstanceSigs
-:seti -XKindSignatures
-:seti -XLambdaCase
-:seti -XMultiParamTypeClasses
-:seti -XMultiWayIf
-:seti -XNamedFieldPuns
-:seti -XPartialTypeSignatures
-:seti -XPatternGuards
-:seti -XRankNTypes
-:seti -XRecordWildCards
-:seti -XScopedTypeVariables
-:seti -XStandaloneDeriving
-:seti -XTupleSections
-:seti -XTypeApplications
-:seti -XTypeFamilies
-:seti -XTypeSynonymInstances
-:seti -XTypeOperators
-:seti -XViewPatterns
-
-:set -Wcompat
-:set -Wincomplete-record-updates
-:set -Wincomplete-uni-patterns
-:set -Wpartial-fields
-
-:set -fhide-source-paths
-:set -freverse-errors
-:set -funclutter-valid-hole-fits
-:set -fdefer-typed-holes
+:seti -Wno-type-defaults

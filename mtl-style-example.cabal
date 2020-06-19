@@ -129,7 +129,7 @@ benchmark effect-style-benchmark
   hs-source-dirs:
       test-suite
   default-extensions: DataKinds DefaultSignatures FlexibleContexts GADTs GeneralizedNewtypeDeriving LambdaCase OverloadedStrings PolyKinds RankNTypes ScopedTypeVariables TypeApplications TypeFamilies TypeOperators
-  ghc-options: -Wall -O2 -flate-specialise -fspecialise-aggressively -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -O2 -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , bytestring
