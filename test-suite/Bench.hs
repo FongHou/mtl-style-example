@@ -34,11 +34,11 @@ mtl =
 
 mtl2 :: ((), [ByteString])
 mtl2 =
-  MTL2.runTest
-    MTLStyleExample.Main.main
-    ["sample.txt"]
-    (FileSystem [("sample.txt", "World")])
-    (posixSecondsToUTCTime 0)
+  runIdentity $ MTL2.runTest
+      MTLStyleExample.Main.main
+      ["sample.txt"]
+      (FileSystem [("sample.txt", "World")])
+      (posixSecondsToUTCTime 0)
 
 freer :: (Either String ([Text], ()))
 freer =

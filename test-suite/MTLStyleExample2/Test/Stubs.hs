@@ -24,24 +24,24 @@ import Lens.Micro.Platform
 import MTLStyleExample.Interfaces
 import System.Log.FastLogger (fromLogStr, toLogStr)
 
-type TestM = RWS ([Text], FS) [ByteString] (ClockState, [ByteString])
+type TestT = RWST ([Text], FS) [ByteString] (ClockState, [ByteString])
 
--- newtype Test a = Test (TestM a)
+-- newtype Test a = Test (Test a)
 --   deriving (Functor, Applicative, Monad)
---   deriving MonadArguments via (ArgumentsT TestM)
---   deriving MonadLogger via (LoggerT TestM)
---   deriving MonadTime via (ClockT TestM)
+--   deriving MonadArguments via (ArgumentsT Test)
+--   deriving MonadLogger via (LoggerT Test)
+--   deriving MonadTime via (ClockT Test)
 
-deriving via (ArgumentsT TestM) instance MonadArguments TestM
+deriving via (ArgumentsT (TestT m)) instance Monad m => MonadArguments (TestT m)
 
-deriving via (FileSystemT TestM) instance MonadFileSystem TestM
+deriving via (FileSystemT (TestT m)) instance Monad m => MonadFileSystem (TestT m)
 
-deriving via (LoggerT TestM) instance MonadLogger TestM
+deriving via (LoggerT (TestT m)) instance Monad m => MonadLogger (TestT m)
 
-deriving via (ClockT TestM) instance MonadTime TestM
+deriving via (ClockT (TestT m)) instance Monad m => MonadTime (TestT m)
 
-runTest :: TestM a -> [Text] -> FS -> UTCTime -> (a, [ByteString])
-runTest m args fs t = evalRWS m (args, fs) (ticks t, [])
+runTest :: Monad m => TestT m a -> [Text] -> FS -> UTCTime -> m (a, [ByteString])
+runTest m args fs t = evalRWST m (args, fs) (ticks t, [])
   where
     ticks t' = ClockTick t' (ticks (addUTCTime 1 t'))
 
