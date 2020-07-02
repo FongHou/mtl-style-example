@@ -34,10 +34,10 @@ spec = describe "main" $ do
 trace :: IO (Either String ([Text], ()))
 trace =
   MTLStyleExample.Main.main
-    & traceEffect @Arguments
-    & traceEffect @FileSystem
-    & traceEffect @Clock
-    & traceEffect @Logger
+    & traceEffect @Arguments show
+    & traceEffect @FileSystem show
+    & traceEffect @Clock show
+    & traceEffect @Logger show
     & runTrace
     & runArguments ["sample.txt" :: Text]
     & runFileSystem (FS [("sample.txt", "World")])

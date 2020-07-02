@@ -24,24 +24,17 @@ import Lens.Micro.Platform
 import MTLStyleExample.Interfaces
 import System.Log.FastLogger (fromLogStr, toLogStr)
 
-type TestT = RWST ([Text], FS) [ByteString] (ClockState, [ByteString])
+type RWST' = RWST ([Text], FS) [ByteString] (ClockState, [ByteString])
 
--- newtype Test a = Test (Test a)
---   deriving (Functor, Applicative, Monad)
---   deriving MonadArguments via (ArgumentsT Test)
---   deriving MonadLogger via (LoggerT Test)
---   deriving MonadTime via (ClockT Test)
-
-deriving via (ArgumentsT (TestT m)) instance Monad m => MonadArguments (TestT m)
-
-deriving via (FileSystemT (TestT m)) instance Monad m => MonadFileSystem (TestT m)
-
-deriving via (LoggerT (TestT m)) instance Monad m => MonadLogger (TestT m)
-
-deriving via (ClockT (TestT m)) instance Monad m => MonadTime (TestT m)
+newtype TestT m a = Test (RWST' m a)
+  deriving (Functor, Applicative, Monad)
+  deriving (MonadArguments) via (ArgumentsT (RWST' m))
+  deriving (MonadFileSystem) via (FileSystemT (RWST' m))
+  deriving (MonadLogger) via (LoggerT (RWST' m))
+  deriving (MonadTime) via (ClockT (RWST' m))
 
 runTest :: Monad m => TestT m a -> [Text] -> FS -> UTCTime -> m (a, [ByteString])
-runTest m args fs t = evalRWST m (args, fs) (ticks t, [])
+runTest (Test m) args fs t = evalRWST m (args, fs) (ticks t, [])
   where
     ticks t' = ClockTick t' (ticks (addUTCTime 1 t'))
 
@@ -60,7 +53,7 @@ newtype FileSystemT m a = FileSystemT (m a)
 
 newtype FS = FileSystem [(Text, Text)]
 
-instance (MonadReader r m, HasType FS r, MonadLogger m) => MonadFileSystem (FileSystemT m) where
+instance (MonadReader r m, HasType FS r) => MonadFileSystem (FileSystemT m) where
   readFile path =
     FileSystemT $
       view (the @FS) >>= \(FileSystem files) -> do
