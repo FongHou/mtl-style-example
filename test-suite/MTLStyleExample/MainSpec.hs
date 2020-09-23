@@ -11,11 +11,12 @@ import MTLStyleExample.Test.Stubs
 spec :: Spec
 spec = describe "main" $ do
   let epoch = posixSecondsToUTCTime 0
-      ((), logMessages) = runIdentity $ main
+      ((), logMessages) = main
         & runArgumentsT ["sample.txt"]
         & runFileSystemT [("sample.txt", "Alyssa")]
-        & runLoggerT
         & runTickingClockT epoch
+        & runLoggerT
+        & runIdentity
 
   it "prints two log messages" $
     length logMessages `shouldBe` 2
