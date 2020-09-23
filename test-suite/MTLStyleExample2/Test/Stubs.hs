@@ -4,7 +4,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -22,7 +21,7 @@ import Data.Time.Clock (UTCTime, addUTCTime)
 import GHC.Generics
 import Lens.Micro.Platform
 import MTLStyleExample.Interfaces
-import System.Log.FastLogger (fromLogStr, toLogStr)
+import Control.Monad.Identity
 
 type RWST' = RWST ([Text], FS) [ByteString] (ClockState, [ByteString])
 
@@ -42,6 +41,7 @@ runTest (Test m) args fs t = evalRWST m (args, fs) (ticks t, [])
 -- Arguments
 newtype ArgumentsT m a = ArgumentsT (m a)
   deriving (Functor, Applicative, Monad)
+  deriving (MonadTrans) via IdentityT
 
 instance (MonadReader r m, HasType [Text] r) => MonadArguments (ArgumentsT m) where
   getArgs = ArgumentsT $ view (the @[Text])
@@ -50,6 +50,7 @@ instance (MonadReader r m, HasType [Text] r) => MonadArguments (ArgumentsT m) wh
 -- File System
 newtype FileSystemT m a = FileSystemT (m a)
   deriving (Functor, Applicative, Monad)
+  deriving (MonadTrans) via IdentityT
 
 newtype FS = FileSystem [(Text, Text)]
 
@@ -66,6 +67,7 @@ instance (MonadReader r m, HasType FS r) => MonadFileSystem (FileSystemT m) wher
 -- Logger
 newtype LoggerT m a = LoggerT (m a)
   deriving (Functor, Applicative, Monad)
+  deriving (MonadTrans) via IdentityT
 
 instance (MonadWriter [ByteString] m) => MonadLogger (LoggerT m) where
   monadLoggerLog _ _ _ str = LoggerT $ tell [fromLogStr (toLogStr str)]
@@ -80,6 +82,7 @@ data ClockState
 
 newtype ClockT m a = ClockT (m a)
   deriving (Functor, Applicative, Monad)
+  deriving (MonadTrans) via IdentityT
 
 instance (MonadState s m, HasType ClockState s) => MonadTime (ClockT m) where
   currentTime =

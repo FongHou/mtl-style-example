@@ -6,7 +6,11 @@
 module MTLStyleExample.Interfaces where
 
 import Control.Monad.Logger
+import Control.Monad.Except
 import Control.Monad.Reader
+import Control.Monad.State
+import Control.Monad.Writer
+import Control.Monad.RWS
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -60,10 +64,13 @@ instance MonadFileSystem IO where
   readFile = T.readFile . T.unpack
 
 -- instance MonadArguments m => MonadArguments (LoggingT m)
+-- instance MonadArguments m => MonadArguments (ExceptT e m)
 -- instance MonadArguments m => MonadArguments (ReaderT r m)
 -- instance MonadArguments m => MonadArguments (StateT s m)
 -- instance (MonadArguments m, Monoid w) => MonadArguments (WriterT w m)
+-- instance (MonadArguments m, Monoid w) => MonadArguments (RWST r w s m)
 -- instance MonadFileSystem m => MonadFileSystem (LoggingT m)
 -- instance MonadFileSystem m => MonadFileSystem (ReaderT r m)
 -- instance MonadFileSystem m => MonadFileSystem (StateT s m)
 -- instance (MonadFileSystem m, Monoid w) => MonadFileSystem (WriterT w m)
+-- instance (MonadFileSystem m, Monoid w) => MonadFileSystem (RWST r w s m)

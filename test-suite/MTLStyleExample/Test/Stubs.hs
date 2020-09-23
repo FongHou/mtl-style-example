@@ -103,6 +103,6 @@ instance (MonadLogger m) => MonadTime (ClockT m) where
   currentTime =
     ClockT $
       get >>= \case
-        ClockStopped t -> logInfoN (T.pack $show t) >> return t
+        ClockStopped t -> logInfoN (T.pack $ show t) >> return t
         ClockTick t s -> put s >> return t
         ClockEndOfTime -> error "currentTime: end of time"
