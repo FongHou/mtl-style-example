@@ -10,6 +10,7 @@
 
 module MTLStyleExample2.Test.Stubs where
 
+import Control.Monad.Identity
 import Control.Monad.Logger
 import Control.Monad.RWS.CPS
 import Control.Monad.Time (MonadTime (..))
@@ -21,16 +22,15 @@ import Data.Time.Clock (UTCTime, addUTCTime)
 import GHC.Generics
 import Lens.Micro.Platform
 import MTLStyleExample.Interfaces
-import Control.Monad.Identity
 
 type RWST' = RWST ([Text], FS) [ByteString] (ClockState, [ByteString])
 
 newtype TestT m a = Test (RWST' m a)
-  deriving (Functor, Applicative, Monad)
-  deriving (MonadArguments) via (ArgumentsT (RWST' m))
-  deriving (MonadFileSystem) via (FileSystemT (RWST' m))
-  deriving (MonadLogger) via (LoggerT (RWST' m))
-  deriving (MonadTime) via (ClockT (RWST' m))
+  deriving (Functor, Applicative, Monad, MonadTrans)
+  deriving (MonadArguments) via ArgumentsT (RWST' m)
+  deriving (MonadFileSystem) via FileSystemT (RWST' m)
+  deriving (MonadLogger) via LoggerT (RWST' m)
+  deriving (MonadTime) via ClockT (RWST' m)
 
 runTest :: Monad m => TestT m a -> [Text] -> FS -> UTCTime -> m (a, [ByteString])
 runTest (Test m) args fs t = evalRWST m (args, fs) (ticks t, [])

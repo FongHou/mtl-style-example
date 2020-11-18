@@ -7,8 +7,6 @@ import Data.Time.Clock (diffUTCTime)
 import MTLStyleExample.Interfaces
 import Prelude hiding (readFile)
 
---------------------------------------------------------------------------------
--- Logic
 main ::
   ( MonadArguments m,
     MonadFileSystem m,

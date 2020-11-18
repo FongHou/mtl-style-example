@@ -46,8 +46,7 @@ deriving instance Show (Arguments a)
 instance Member Arguments effs => MonadArguments (Eff effs) where
   getArgs = send GetArgs
 
-runArguments ::
-  [Text] -> Eff (Arguments : eff) x -> Eff eff x
+runArguments :: [Text] -> Eff (Arguments : eff) x -> Eff eff x
 runArguments x =
   runInputConst x
     . reinterpret

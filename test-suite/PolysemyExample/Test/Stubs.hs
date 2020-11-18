@@ -27,10 +27,10 @@ import GHC.Generics
 import MTLStyleExample.Interfaces
 
 import Polysemy
-import Polysemy.Error
-import Polysemy.Input
-import Polysemy.Output
-import Polysemy.State
+import Polysemy.Error ( throw, Error )
+import Polysemy.Input ( input, Input )
+import Polysemy.Output ( output, Output )
+import Polysemy.State ( State, put, evalState, get )
 
 import System.Log.FastLogger ( fromLogStr, toLogStr )
 
