@@ -74,7 +74,7 @@ instance Member FileSystem effs => MonadFileSystem (Sem effs) where
 
 newtype FS = FS [(Text, Text)]
 
-runFileSystem :: Members [Input FS, (Error String)] eff
+runFileSystem :: Members [Input FS, Error String] eff
               => Sem (FileSystem : eff) x
               -> Sem eff x
 runFileSystem = interpret

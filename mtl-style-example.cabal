@@ -80,7 +80,6 @@ test-suite effect-style-test-suite
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-      MonadUnlift
       FreerExample.MainSpec
       FreerExample.Test.Stubs
       MTLStyleExample.MainSpec
